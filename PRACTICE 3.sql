@@ -10,7 +10,7 @@ CONCAT (UPPER(LEFT(name,1)),LOWER(RIGHT(name,LENGTH(name)-1))) AS name
 FROM users
 ORDER BY user_id;
 
------EX3
+---------EX3
 
 SELECT manufacturer,
 CONCAT('$',ROUND(SUM(total_sales)/1000000,0),' ','million') AS sale
@@ -42,7 +42,7 @@ SELECT tweet_id
 FROM Tweets
 WHERE LENGTH( content )>15;
 
-------EX7
+--------------EX7
 SELECT DISTINCT activity_date AS day,
 COUNT(DISTINCT(user_id)) AS active_users
 FROM activity
