@@ -43,11 +43,11 @@ FROM Tweets
 WHERE LENGTH( content )>15;
 
 ------EX7
-SELECT  activity_date  AS day,
+SELECT DISTINCT activity_date AS day,
 COUNT(DISTINCT(user_id)) AS active_users
 FROM activity
-WHERE datediff('2019-07-27', activity_date) < 30
-AND activity_date <= '2019-07-27';
+WHERE activity_date >'2019-06-27' AND  activity_date <='2019-07-27'
+GROUP BY day;
 
 ---EX8
 select COUNT(first_name) AS total_employee
