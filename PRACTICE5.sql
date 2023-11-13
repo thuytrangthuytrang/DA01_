@@ -15,28 +15,24 @@ ON emails_id=texts_id  AND texts.signup_action = 'Confirmed';
 
 -----EX3
 
-SELECT age_breakdown.age_bucket,
-CASE 
-  WHEN activities.activity_type = 'open' THEN time_spent as time_open 
-  ELSE time_spent as time_send
-END 
-  THEN activities.time_spent/(activities.time_spent+) as open_perc
-  ELSE activities.time_spent/(activities.time_spent+) as send_perc
-END
-FROM activities
-LEFT JOIN age_breakdown
-ON activities.user_id=age_breakdown.user_id
-GROUP BY age_breakdown.age_bucket;
 
+--EX4
+SELECT customer_contracts.customer_id
+FROM customer_contracts
+JOIN products 
+  ON customer_contracts.product_id = products.product_id
+GROUP BY customer_contracts.customer_id
+HAVING COUNT(DISTINCT products.product_category) = 3;
 
---
 ----EX5
-SELECT emp.employee_id, emp.name,
-COUNT( emp.reports_to) as reports_count,
-FLOOR(AVG(emp.age)) AS average_age
-FROM Employees AS emp
-LEFT JOIN Employees AS mng
-ON emp.employee_id = mng.employee_id;
+SELECT a.Employee_id, a.name, 
+COUNT(b.age) AS reports_count, 
+ROUND(CAST(SUM(b.age)/COUNT(b.age) AS DECIMAL),0) AS average_age
+FROM Employees AS a
+INNER JOIN Employees AS b
+  ON a.employee_id = b.reports_to
+GROUP BY a.Employee_id, a.name
+ORDER BY a.Employee_id;
 
 -----EX6
 SELECT Products.product_name , SUM(Orders.unit) as unit 
