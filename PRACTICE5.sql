@@ -28,14 +28,15 @@ LEFT JOIN age_breakdown
 ON activities.user_id=age_breakdown.user_id
 GROUP BY age_breakdown.age_bucket;
 
+
+--
 ----EX5
-SELECT mng.employee_id, emp.name,
+SELECT emp.employee_id, emp.name,
 COUNT( emp.reports_to) as reports_count,
-AVG(emp.age) AS average_age
+FLOOR(AVG(emp.age)) AS average_age
 FROM Employees AS emp
-JOIN Employees AS mng
-ON emp.employee_id = mng.employee_id 
-and emp.reports_count IS NOT NULL;
+LEFT JOIN Employees AS mng
+ON emp.employee_id = mng.employee_id;
 
 -----EX6
 SELECT Products.product_name , SUM(Orders.unit) as unit 
