@@ -1,20 +1,44 @@
 ---EX1
 SELECT country.continent , FLOOR (AVG(city.population))
 FROM city
-INNER JOIN country 
+JOIN country 
   ON city.countrycode= country.code 
 GROUP BY country.continent;
 
 ----- EX2
 SELECT 
-COUNT(texts.email_id)/COUNT(DISTINCT emails.email_id) AS confirm_rate
-FROM emails
-LEFT JOIN texts
-ON emails_id=texts_id  AND texts.signup_action = 'Confirmed';
+ROUND(sum(CASE 
+				WHEN texts.signup_action ='Confirmed'
+					THEN 1
+				ELSE 0
+				END)::DECIMAL / count(*), 2)  AS confirm_rate
+FROM emails 
+JOIN texts 
+  ON emails.email_id  = texts.email_id;
 
 
 -----EX3
-
+SELECT age_breakdown.age_bucket,
+ROUND(100.0 *sum(case WHEN ac.activity_type = 'send' 
+  THEN  ac.time_spent 
+  END ) / 
+  sum(CASE 
+			WHEN ac.activity_type in ('open','send')
+			THEN ac.time_spent 
+			END),2 )
+AS send_perc,
+ROUND(100.0 *sum(case WHEN ac.activity_type = 'open' 
+  THEN ac.time_spent 
+  END) / 
+  sum(CASE 
+			WHEN ac.activity_type in ('open','send')
+			THEN ac.time_spent 
+			end),2)
+AS open_perc
+FROM activities as ac 
+JOIN age_breakdown
+  ON ac.user_id=age_breakdown.user_id
+GROUP BY age_breakdown.age_bucket;
 
 --EX4
 SELECT customer_contracts.customer_id
