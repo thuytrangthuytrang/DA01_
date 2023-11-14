@@ -8,10 +8,9 @@ GROUP BY country.continent;
 ----- EX2
 SELECT 
 ROUND(sum(CASE 
-				WHEN texts.signup_action ='Confirmed'
-					THEN 1
-				ELSE 0
-				END)::DECIMAL / count(*), 2)  AS confirm_rate
+	WHEN texts.signup_action ='Confirmed'
+	THEN 1 ELSE 0
+	END)::DECIMAL / count(*), 2)  AS confirm_rate
 FROM emails 
 JOIN texts 
   ON emails.email_id  = texts.email_id;
@@ -23,18 +22,16 @@ ROUND(100.0 *sum(case WHEN ac.activity_type = 'send'
   THEN  ac.time_spent 
   END ) / 
   sum(CASE 
-			WHEN ac.activity_type in ('open','send')
-			THEN ac.time_spent 
-			END),2 )
-AS send_perc,
+	WHEN ac.activity_type in ('open','send')
+	THEN ac.time_spent 
+	END),2 ) AS send_perc,
 ROUND(100.0 *sum(case WHEN ac.activity_type = 'open' 
   THEN ac.time_spent 
   END) / 
   sum(CASE 
-			WHEN ac.activity_type in ('open','send')
-			THEN ac.time_spent 
-			end),2)
-AS open_perc
+	WHEN ac.activity_type in ('open','send')
+	THEN ac.time_spent 
+	end),2) AS open_perc
 FROM activities as ac 
 JOIN age_breakdown
   ON ac.user_id=age_breakdown.user_id
