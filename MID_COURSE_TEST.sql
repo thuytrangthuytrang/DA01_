@@ -19,9 +19,9 @@ WHERE replacement_cost between 9.99 and 19.99 ;
 SELECT a.title, a.length, c.name
 FROM film AS a
 JOIN film_category AS b
-ON a.film_id = b.film_id
+	ON a.film_id = b.film_id
 JOIN category AS c
-ON b.category_id=c.category_id
+	ON b.category_id=c.category_id
 WHERE  c.name IN ('Drama', 'Sports')
 ORDER BY a.length DESC;
 
@@ -29,9 +29,9 @@ ORDER BY a.length DESC;
 SELECT c.name, COUNT(a.title) AS number
 FROM film AS a
 JOIN film_category AS b
-ON a.film_id = b.film_id
+	ON a.film_id = b.film_id
 JOIN category AS c
-ON b.category_id=c.category_id
+	ON b.category_id=c.category_id
 GROUP BY c.name
 ORDER BY number DESC;
 
