@@ -8,12 +8,6 @@ SELECT COUNT(ect.company_id) AS duplicate_companies
 FROM ect 
 WHERE ect.job >1;
 
---EX9
-SELECT employee_id
-FROM employees
-WHERE salary < 30000 
-  AND manager_id NOT IN (SELECT employee_id FROM employees)
-ORDER BY employee_id;
 --EX2
 
 
@@ -27,6 +21,31 @@ LEFT JOIN page_likes
 WHERE page_likes.liked_date IS NULL
 ORDER BY  pages.page_id;
 
+--EX8
+
+WITH cte1 AS
+(SELECT customer_id, COUNT(product_key ) as number 
+FROM Customer
+GROUP BY customer_id
+HAVING number=2)
+
+SELECT customer_id
+FROM cte1;
+
+
+
+SELECT a.customer_id, b.product_key,COUNT(a.product_key) as c
+FROM customer as a
+JOIN product as b
+  ON a. product_key=b.product_key
+GROUP BY a.customer_id, b.product_key;
+--EX9
+SELECT employee_id
+FROM employees
+WHERE salary < 30000 
+  AND manager_id NOT IN (SELECT employee_id FROM employees)
+ORDER BY employee_id;
+
 --EX10
 WITH ect AS
   (SELECT company_id, title, description, 
@@ -37,7 +56,8 @@ SELECT COUNT(ect.company_id) AS duplicate_companies
 FROM ect 
 WHERE ect.job >1;
 
---EX11
+
+-----EX11
 /* lượt phim nhiều nhất*/
 WITH cte1 AS
 
