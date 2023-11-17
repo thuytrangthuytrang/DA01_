@@ -13,20 +13,25 @@ WHERE ect.job >1;
 
 --EX 5 
 WITH cte1 AS 
-(SELECT user_id,  event_type
-EXTRACT (month FROM event_date)=6 AND 
-EXTRACT (year FROM event_date)='2020'
-FROM user_actions),
+(SELECT user_id
+FROM user_actions
+WHERE EXTRACT (month FROM event_date)='6' AND 
+EXTRACT (year FROM event_date)='2020'),
 
 cte2 AS
-(SELECT user_id,  
-EXTRACT (month FROM event_date)=7 AND 
-EXTRACT (year FROM event_date)='2020'
-FROM user_actions)
+(SELECT user_id, event_date
+FROM user_actions
+WHERE EXTRACT (month FROM event_date)='7' AND 
+EXTRACT (year FROM event_date)='2020')
 
-SELECT user_id
+SELECT EXTRACT (month FROM b.event_date) as month,
+COUNT(DISTINCT(b.user_id))
 FROM cte1 as a 
-WHERE user_id=(select user_id from cte2 as b where a.user_id=b.user_id)
+join cte2 as b 
+  ON a. user_id=b.user_id
+GROUP BY EXTRACT(MONTH FROM b.event_date)
+HAVING EXTRACT (month FROM b.event_date) ='7'
+
 
 
 
