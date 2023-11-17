@@ -1,4 +1,5 @@
 --EX1
+
 WITH ect AS
   (SELECT company_id, title, description, 
   COUNT(job_id) as job  
@@ -10,29 +11,31 @@ WHERE ect.job >1;
 
 --EX2
 
-
---EX 5 
 WITH cte1 AS 
-(SELECT user_id
-FROM user_actions
-WHERE EXTRACT (month FROM event_date)='6' AND 
-EXTRACT (year FROM event_date)='2020'),
+(SELECT category, product, SUM(spend) as total_spend 
+FROM product_spend
+WHERE EXTRACT(year from transaction_date)='2022'
+AND category='appliance'
+GROUP BY category, product
+ORDER BY category,  total_spend DESC
+LIMIT 2),
 
 cte2 AS
-(SELECT user_id, event_date
-FROM user_actions
-WHERE EXTRACT (month FROM event_date)='7' AND 
-EXTRACT (year FROM event_date)='2020')
+(SELECT category, product, sum(spend) as total_spend 
+FROM product_spend
+WHERE EXTRACT(year from transaction_date)='2022'
+AND category='electronics'
+GROUP BY category, product 
+ORDER BY category, total_spend  DESC
+LIMIT 2)
 
-SELECT EXTRACT (month FROM b.event_date) as month,
-COUNT(DISTINCT(b.user_id))
-FROM cte1 as a 
-join cte2 as b 
-  ON a. user_id=b.user_id
-GROUP BY EXTRACT(MONTH FROM b.event_date)
-HAVING EXTRACT (month FROM b.event_date) ='7'
+SELECT category, product, total_spend 
+FROM cte1 
+UNION ALL 
+SELECT category, product, total_spend 
+FROM cte2 
 
-
+---EX3 LỖI 
 
 
 --EX4
@@ -43,19 +46,45 @@ LEFT JOIN page_likes
 WHERE page_likes.liked_date IS NULL
 ORDER BY  pages.page_id;
 
+---EX5 LỖI
+
+--EX6
+
+SELECT DATE_FORMAT(trans_date, '%Y-%m') AS month, 
+country,
+COUNT(state) as trans_count, 
+sum( case when state ='approved 'then 1 else 0 end) as approved_count,
+sum(amount) as trans_total_amount,
+sum( case when state ='approved 'then amount else 0 end) as approved_total_amount
+FROM Transactions
+GROUP BY month, country;
+
+-----------EX7 
+
+WITH cte1 AS 
+(SELECT product_id, MIN(year) as min_year 
+FROM Sales
+GROUP BY product_id)
+
+SELECT a.product_id, a.min_year as first_year,  b.quantity, b.price
+FROM cte1  AS a 
+JOIN Sales AS b 
+ON a.product_id= b. product_id
+where a.min_year = b.year
+
 --EX8
 
 WITH cte1 AS 
 (SELECT customer_id, COUNT(DISTINCT(product_key) ) as number 
 FROM Customer
 GROUP BY customer_id
-HAVING number=(select count(product_key) from Product)
-)
+HAVING number=(select count(product_key) from Product))
 
 SELECT customer_id 
 FROM cte1;
 
 --EX9
+
 SELECT employee_id
 FROM employees
 WHERE salary < 30000 
@@ -63,6 +92,7 @@ WHERE salary < 30000
 ORDER BY employee_id;
 
 --EX10
+
 WITH ect AS
   (SELECT company_id, title, description, 
   COUNT(job_id) as job  
@@ -74,6 +104,7 @@ WHERE ect.job >1;
 
 
 -----EX11
+
 /* lượt phim nhiều nhất*/
 WITH cte1 AS
 
@@ -112,8 +143,7 @@ AND EXTRACT(year FROM g.created_at)='2020'
 GROUP BY title
 HAVING d = (SELECT cte3.n FROM cte3)
 ORDER BY  title
-LIMIT 1
-)
+LIMIT 1)
 
 SELECT name as results
 FROM cte2
@@ -122,6 +152,7 @@ SELECT title as results
 FROM cte4;
 
 --EX12
+
 WITH cte1 AS 
 (SELECT requester_id as id 
 FROM RequestAccepted
@@ -134,6 +165,7 @@ from cte1
 group by id
 order by num desc
 limit 1;
+
 
 
 
