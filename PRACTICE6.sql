@@ -11,6 +11,23 @@ WHERE ect.job >1;
 --EX2
 
 
+--EX 5 
+WITH cte1 AS 
+(SELECT user_id,  event_type
+EXTRACT (month FROM event_date)=6 AND 
+EXTRACT (year FROM event_date)='2020'
+FROM user_actions),
+
+cte2 AS
+(SELECT user_id,  
+EXTRACT (month FROM event_date)=7 AND 
+EXTRACT (year FROM event_date)='2020'
+FROM user_actions)
+
+SELECT user_id
+FROM cte1 as a 
+WHERE user_id=(select user_id from cte2 as b where a.user_id=b.user_id)
+
 
 
 --EX4
@@ -23,22 +40,16 @@ ORDER BY  pages.page_id;
 
 --EX8
 
-WITH cte1 AS
-(SELECT customer_id, COUNT(product_key ) as number 
+WITH cte1 AS 
+(SELECT customer_id, COUNT(DISTINCT(product_key) ) as number 
 FROM Customer
 GROUP BY customer_id
-HAVING number=2)
+HAVING number=(select count(product_key) from Product)
+)
 
-SELECT customer_id
+SELECT customer_id 
 FROM cte1;
 
-
-
-SELECT a.customer_id, b.product_key,COUNT(a.product_key) as c
-FROM customer as a
-JOIN product as b
-  ON a. product_key=b.product_key
-GROUP BY a.customer_id, b.product_key;
 --EX9
 SELECT employee_id
 FROM employees
