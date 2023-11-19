@@ -51,6 +51,22 @@ SELECT count(*)
 FROM cte1
 Where hhh<=10;
 
+--EX5
+
+WITH cte AS 
+(SELECT user_id, tweet_date, tweet_count as c ,
+lag (tweet_count,2) OVER(PARTITION BY user_id ORDER BY tweet_date) as a,
+lag(tweet_count,1) OVER(PARTITION BY user_id ORDER BY tweet_date ) as b  
+FROM tweets)
+
+SELECT *,
+CASE 
+  WHEN a IS NULL THEN ROUND(CAST((c+b)/2 AS DECIMAL),2)
+  WHEN b IS NULL AND a IS NULL THEN  c
+  ELSE ROUND(cast ((c+a+b)/3 as DECIMAL),2)
+END AS rolling_avg_3d
+FROM cte;
+
 --EX 4
 
 SELECT transaction_date, user_id,COUNT(transaction_date) AS purchase_count
