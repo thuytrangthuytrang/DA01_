@@ -15,21 +15,43 @@ SELECT artist_name, artist_rank
 FROM cte1
 WHERE artist_rank <= 5; 
 
---EX 4
+--EX7
 
-WITH cte1 AS
-(SELECT transaction_date, 
-user_id, COUNT(product_id) AS a 
-FROM user_transactions
-GROUP BY user_id,transaction_date)
+WITH cte1 AS 
+(SELECT category,product,
+SUM(spend) AS total,
+RANK() OVER(PARTITION BY category ORDER BY SUM(spend) DESC) AS ranking 
+FROM product_spend
+WHERE EXTRACT(year from transaction_date)='2022'
+GROUP BY category, product) 
 
-SELECT cte1.transaction_date, cte1.user_id,
-FIRST_VALUE(cte1.a) OVER(PARTITION BY cte1.transaction_date,cte1.user_id 
-ORDER BY cte1.transaction_date DESC)
-      AS purchase_count 
+SELECT category,product,total
+FROM cte1 
+WHERE ranking <=2
+ORDER BY category, ranking;
+
+--EX6
+
+WITH cte AS 
+(SELECT merchant_id,credit_card_id,amount,
+      CAST(transaction_timestamp AS time) AS time,
+    LEAD(CAST(transaction_timestamp AS time)) 
+      OVER( PARTITION BY merchant_id,credit_card_id	,amount) AS next,
+    
+LEAD(CAST(transaction_timestamp AS time)) 
+  OVER( PARTITION BY merchant_id,credit_card_id	,amount)
+  -CAST(transaction_timestamp AS time) AS diff
+  FROM transactions),
+  
+cte1 AS
+(SELECT *,extract(hour FROM diff)*60 + extract (minute FROM diff) as hhh 
+FROM cte)
+
+SELECT count(*)
 FROM cte1
-ORDER BY cte1.transaction_date
+Where hhh<=10;
 
+--EX 4
 
 SELECT transaction_date, user_id,COUNT(transaction_date) AS purchase_count
 FROM
@@ -43,33 +65,6 @@ WHERE ranking = 1
 GROUP BY user_id,transaction_date
 ORDER BY transaction_date
 
-
-
-
-
-  
-SELECT transaction_date, user_id, purchase_count
-FROM (
-SELECT *, FIRST_VALUE(purchase_count ) OVER(PARTITION BY user_id 
-ORDER BY transaction_date DESC) AS ranking  
-FROM cte1
-ORDER BY user_id,transaction_date DESC) AS g 
-
-ORDER BY transaction_date
-
-
-
---------------------------------
-
-WITH cte1 AS 
-( SELECT transaction_date, user_id, COUNT(product_id) AS a 
-  FROM user_transactions
-  GROUP BY  user_id,transaction_date)
-SELECT transaction_date, user_id,
-FIRST_VALUE(a) OVER(PARTITION BY user_id 
-ORDER BY transaction_date DESC) AS   purchase_count
-FROM cte1 
-ORDER BY transaction_date;
 
 --EX3
 
