@@ -39,3 +39,20 @@ FROM cte;
 
 --EX3--
 
+--EX6--
+
+WITH cte AS
+(SELECT *, 
+DENSE_RANK() OVER(PARTITION BY Department ORDER BY Salary DESC ) as ranking 
+FROM 
+(SELECT b.name as Department,a.name as Employee,a.salary as salary 
+FROM Employee as a
+JOIN Department as b
+    ON a.departmentId=b.id) AS a)
+
+SELECT Department,Employee, salary
+FROM cte 
+WHERE ranking <=3
+
+--
+
