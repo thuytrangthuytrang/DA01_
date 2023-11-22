@@ -21,21 +21,34 @@ FROM cte
 JOIN cte2 
   ON cte.customer_id=cte2.customer_id;
 
---EX2-- ĐỔI RA SỐ GIÂY Ở CASE WHEN 
+--EX2--
 
 WITH cte AS
-(SELECT *,
-CASE
-WHEN  event_date =next_day-1 THEN 1
-ELSE 0
-END as nnn
-FROM 
-(SELECT player_id,event_date,
-LEAD(event_date) OVER(PARTITION BY player_id) as next_day 
-FROM Activity) AS aaa)
+(SELECT player_id, event_date,
+ROW_NUMBER()OVER(PARTITION BY player_id ORDER BY event_date) as ranking 
+FROM Activity),
 
-SELECT ROUND(sum(nnn)/count(DISTINCT player_id),2) AS fraction 
-FROM cte;
+cte1 AS
+(SELECT player_id, event_date 
+FROM cte 
+WHERE ranking=1), 
+
+cte2 AS
+(SELECT player_id, event_date
+FROM cte
+WHERE ranking=2),
+
+cte3 AS
+(SELECT a.player_id, a.event_date, b.event_date as next_day
+FROM cte1 as a
+JOIN cte2 as b 
+ON a.player_id=b.player_id
+AND a.event_date=DATE_SUB(b.event_date, INTERVAL 1 DAY))
+
+SELECT ROUND(COUNT(c.player_id)/COUNT(d.player_id),2) AS fraction 
+FROM cte3 as c
+RIGHT JOIN cte1 as d
+  ON c.player_id= d.player_id;
 
 --EX3--
 
@@ -49,7 +62,7 @@ END as id, student
 FROM seat order by id;
 
 
---EX--4
+--EX4--
 
 
 WITH cte AS
@@ -125,7 +138,7 @@ FROM cte
 UNION
 SELECT product_id, '10' as price
 FROM Products
-WHERE product_id NOT IN (SELECT product_id FROM cte)
+WHERE product_id NOT IN (SELECT product_id FROM cte);
 
 
 
