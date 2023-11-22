@@ -5,7 +5,7 @@ COUNT(first_order) OVER(PARTITION BY customer_id ) as nnn
 FROM 
 (SELECT distinct customer_id, order_date,customer_pref_delivery_date,
 RANK() OVER(PARTITION BY customer_id ORDER BY  order_date  ) as first_order
-FROM Delivery) as cccc
+FROM Delivery) as aaa
 WHERE first_order=1),
 
 cte2 AS
