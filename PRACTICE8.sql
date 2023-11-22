@@ -113,7 +113,8 @@ WHERE ranking <=3
 
 
 WITH cte AS 
-(SELECT person_name,weight,turn,SUM(weight) over (ORDER BY turn) as sum 
+(SELECT person_name,weight,turn,
+SUM(weight) over (ORDER BY turn) as sum 
 FROM Queue)
 
 SELECT person_name
