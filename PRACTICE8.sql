@@ -98,8 +98,6 @@ WHERE ranking <=3
 
 --EX7--
 
---EX8--
-
 
 WITH cte AS 
 (SELECT person_name,weight,turn,SUM(weight) over (ORDER BY turn) as sum 
@@ -110,5 +108,24 @@ FROM cte
 WHERE sum <= 1000
 ORDER BY sum DESC
 LIMIT 1;
+
+--EX8--
+
+WITH cte AS
+(SELECT product_id, price
+FROM 
+(SELECT product_id, new_price AS price, rank() OVER(PARTITION BY product_id ORDER BY change_date desc)
+as ranking 
+FROM Products
+WHERE change_date<='2019-08-16' ) AS a
+WHERE ranking=1)
+
+SELECT *
+FROM cte
+UNION
+SELECT product_id, '10' as price
+FROM Products
+WHERE product_id NOT IN (SELECT product_id FROM cte)
+
 
 
