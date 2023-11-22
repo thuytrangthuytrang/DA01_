@@ -39,6 +39,48 @@ FROM cte;
 
 --EX3--
 
+
+SELECT
+CASE
+WHEN mod(id,2)=0 then id-1
+WHEN mod(id,2)=1 and id+1 not in (select id from seat) then id
+ELSE id+1 
+END as id, student
+FROM seat order by id;
+
+
+--EX--4
+
+
+WITH cte AS
+
+(SELECT visited_on,amount ,  amount +
+lag(amount,6) OVER(ORDER BY visited_on) + lag(amount,5) OVER(ORDER BY visited_on ) +
+lag(amount,4) OVER(ORDER BY visited_on )+ lag(amount,3) OVER(ORDER BY visited_on)  +
+lag(amount,2) OVER(ORDER BY visited_on )+ lag(amount,1) OVER(ORDER BY visited_on ) 
+as sum 
+FROM 
+(SELECT visited_on, SUM(amount) as amount
+FROM Customer
+GROUP BY  visited_on ) AS aaa)
+
+SELECT visited_on, sum as amount, round(sum/7,2) as average_amount
+FROM cte 
+WHERE sum IS NOT NULL;
+
+--EX5--
+
+WITH cte AS
+(SELECT pid, tiv_2015, tiv_2016, 
+COUNT(TIV_2015) OVER (PARTITION BY tiv_2015) as a,
+COUNT(concat(lat, lon)) OVER (PARTITION BY concat(lat, lon)) as b
+FROM Insurance )
+
+SELECT ROUND(SUM(tiv_2016),2) as  tiv_2016 
+FROM cte 
+WHERE a<>1 AND  b=1;
+
+
 --EX6--
 
 WITH cte AS
@@ -54,5 +96,19 @@ SELECT Department,Employee, salary
 FROM cte 
 WHERE ranking <=3
 
---
+--EX7--
+
+--EX8--
+
+
+WITH cte AS 
+(SELECT person_name,weight,turn,SUM(weight) over (ORDER BY turn) as sum 
+FROM Queue)
+
+SELECT person_name
+FROM cte
+WHERE sum <= 1000
+ORDER BY sum DESC
+LIMIT 1;
+
 
