@@ -1,10 +1,29 @@
------1. thay đổi dữ liệu----
-ALTER TABLE SALES_DATASET_RFM_PRJ
-ALTER COLUMN TYPE ordernumber TYPE numberic USING(trim(ordernumber)::numeric),
-ALTER COLUMN TYPE quantityordered TYPE numberic USING(trim(ordernumber)::numeric),
-ALTER COLUMN TYPE priceeach TYPE numberic USING(trim(ordernumber)::decimal),
-ALTER COLUMN TYPE orderlinenumber TYPE numberic USING(trim(ordernumber)::numeric),
-ALTER COLUMN TYPE salesTYPE numberic USING(trim(ordernumber)::decimal),
-ALTER COLUMN TYPE orderdate USING(trim(ordernumber)::YYYY-MM-DD H:MI),
-ALTER COLUMN TYPE msrp USING(trim(ordernumber)::numeric),
-ALTER COLUMN TYPE orderdate USING(trim(ordernumber)::YYYY-MM-DD H:MI),
+SET datestyle = 'iso,mdy';  
+ALTER TABLE sales_dataset_rfm_prj
+ALTER COLUMN quantityordered TYPE numeric USING(trim(ordernumber)::numeric),
+ALTER COLUMN priceeach TYPE decimal USING(trim(ordernumber)::decimal),
+ALTER COLUMN orderlinenumber TYPE numeric USING(trim(ordernumber)::numeric),
+ALTER COLUMN sales TYPE numeric USING(trim(ordernumber)::numeric),
+ALTER COLUMN msrp TYPE numeric  USING(trim(ordernumber)::numeric),
+ALTER COLUMN orderdate TYPE date USING(TRIM(orderdate)::time),
+/*2. check null/blank*/ 
+ALTER TABLE sales_dataset_rfm_prj
+ADD CHECK ( ORDERNUMBER IS NOT NULL),
+ADD CHECK ( QUANTITYORDERED IS NOT NULL),
+ADD CHECK ( PRICEEACH IS NOT NULL),                      
+ADD CHECK ( ORDERLINENUMBER IS NOT NULL),
+ADD CHECK ( SALES IS NOT NULL),
+ADD CHECK ( ORDERDATE  IS NOT NULL)
+
+/*3 Thêm cột CONTACTLASTNAME, CONTACTFIRSTNAME 
+được tách ra từ CONTACTFULLNAME
+Chuẩn hóa CONTACTLASTNAME, CONTACTFIRSTNAME
+theo định dạng chữ cái đầu tiên viết hoa, chữ cái tiếp theo viết thường */
+ALTER TABLE sales_dataset_rfm_prj
+ADD COLUMN CONTACTLASTNAME VARCHAR(255),
+ADD COLUMN CONTACTFIRSTNAME VARCHAR(255)
+
+INSERT INTO sales_dataset_rfm_prj(CONTACTLASTNAME,CONTACTFIRSTNAME)
+VALUES 
+
+SELECT CONTACTFULLNAME FROM sales_dataset_rfm_prj
