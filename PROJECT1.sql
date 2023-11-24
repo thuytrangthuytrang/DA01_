@@ -1,15 +1,16 @@
+/*****1. Chuyển đổi kiểu dữ liệu phù hợp cho các trường*/
+
 SET datestyle = 'iso,mdy';  
 ALTER TABLE sales_dataset_rfm_prj
 ALTER COLUMN orderdate TYPE date USING (TRIM(orderdate):: date),
-ALTER TABLE sales_dataset_rfm_prj
-ALTER COLUMN quantityordered TYPE numeric USING(trim(ordernumber)::numeric),
-ALTER COLUMN priceeach TYPE decimal USING(trim(ordernumber)::decimal),
-ALTER COLUMN orderlinenumber TYPE numeric USING(trim(ordernumber)::numeric),
-ALTER COLUMN sales TYPE numeric USING(trim(ordernumber)::numeric),
-ALTER COLUMN msrp TYPE numeric  USING(trim(ordernumber)::numeric)
+ALTER COLUMN quantityordered TYPE numeric USING(trim(quantityordered)::numeric),
+ALTER COLUMN priceeach TYPE decimal USING(trim(priceeach)::decimal),
+ALTER COLUMN orderlinenumber TYPE numeric USING(trim(orderlinenumber)::numeric),
+ALTER COLUMN sales TYPE numeric USING(trim(sales)::numeric),
+ALTER COLUMN msrp TYPE numeric  USING(trim(msrp)::numeric)
 
 
-/****2222222*/
+/****2. Check NULL*/
 ALTER TABLE sales_dataset_rfm_prj
 ADD CHECK ( ORDERNUMBER IS NOT NULL),
 ADD CHECK ( QUANTITYORDERED IS NOT NULL),
@@ -20,13 +21,13 @@ ADD CHECK ( ORDERDATE  IS NOT NULL)
 
 
 
-/****/
+/****3. Thêm cột CONTACTLASTNAME, CONTACTFIRSTNAME */
 ALTER TABLE sales_dataset_rfm_prj
 ADD COLUMN CONTACTLASTNAME VARCHAR(255),
 ADD COLUMN CONTACTFIRSTNAME VARCHAR(255)
 
 
-/****/
+/*tách first, last name từ CONTACTFULLNAME**/
 
 CREATE TEMP TABLE AAA AS
 (
@@ -45,22 +46,35 @@ UPPER (LEFT(CONTACTFULLNAME,1)) ||
 			 AS CONTACTLASTNAME
 FROM sales_dataset_rfm_prj)
 
-/****/
 
-INSERT INTO sales_dataset_rfm_prj(CONTACTFIRSTNAME,CONTACTLASTNAME)
-SELECT CONTACTFIRSTNAME,CONTACTLASTNAME
-FROM AAA;
 
-/*Thêm cột QTR_ID, MONTH_ID, YEAR_ID lần lượt là Qúy,
+
+/**********Thêm cột QTR_ID, MONTH_ID, YEAR_ID lần lượt là Qúy,
 tháng, năm được lấy ra từ ORDERDATE */
 
 ALTER TABLE sales_dataset_rfm_prj
-ADD COLUMN MONTH_ID MONTH,
-ADD COLUMN CONTACTFIRSTNAME VARCHAR(255)
+ADD COLUMN QTR_ID int,
+ADD COLUMN MONTH_ID int,
+ADD COLUMN YEAR_ID int
 
-SELECT MONTH(ORDERDATE)
-FROM sales_dataset_rfm_prj
+/*Qúy,tháng, năm được lấy ra từ ORDERDATE*/
 
+create temp table nnnn as 
+(
+SELECT 
+EXTRACT( MONTH FROM ORDERDATE) AS MONTH_ID,
+EXTRACT( YEAR FROM ORDERDATE) AS YEAR_ID,
+CASE
+	WHEN EXTRACT( MONTH FROM ORDERDATE) IN(1,2,3) THEN 1
+	WHEN EXTRACT( MONTH FROM ORDERDATE) IN(4,5,6) THEN 2
+	WHEN EXTRACT( MONTH FROM ORDERDATE) IN(7,8,9) THEN 3
+	ELSE 4
+END AS QTR_ID
+FROM sales_dataset_rfm_prj)
+
+
+	
+/******5. outlier*////
 /* box plot*/
 
 WITH cte AS
@@ -83,8 +97,7 @@ FROM sales_dataset_rfm_prj) as bbb)
   /* Z-CORE*/
   
   WITH cte AS
-  (
-	  SELECT  QUANTITYORDERED,
+  ( SELECT  QUANTITYORDERED,
 	  (select avg(QUANTITYORDERED)
 	  from sales_dataset_rfm_prj) as av ,
 	  (select stddev(QUANTITYORDERED)
@@ -95,6 +108,13 @@ FROM sales_dataset_rfm_prj) as bbb)
 	 (QUANTITYORDERED- av)/stddev as z_score
 	  from cte
 	  where abs(QUANTITYORDERED- av)/stddev >2
+
+/******6. Lưu vào bảng mới tên là SALES_DATASET_RFM_PRJ_CLEAN*/
+
+CREATE TABLE SALES_DATASET_RFM_PRJ_CLEAN AS
+(
+SELECT * FROM sales_dataset_rfm_prj )
+
 
 
 
