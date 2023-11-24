@@ -83,8 +83,8 @@ FROM
 (SELECT 
 percentile_cont (0.25) WITHIN GROUP (ORDER BY QUANTITYORDERED ) as Q1,
 percentile_cont (0.75) WITHIN GROUP (ORDER BY QUANTITYORDERED ) as Q3,
-percentile_cont (0.25) WITHIN GROUP (ORDER BY QUANTITYORDERED ) -
-percentile_cont (0.75) WITHIN GROUP (ORDER BY QUANTITYORDERED ) as IQR
+percentile_cont (0.75) WITHIN GROUP (ORDER BY QUANTITYORDERED ) -
+percentile_cont (0.25) WITHIN GROUP (ORDER BY QUANTITYORDERED ) as IQR
 FROM sales_dataset_rfm_prj) as bbb)
  
  select *
@@ -96,18 +96,22 @@ FROM sales_dataset_rfm_prj) as bbb)
   
   /* Z-CORE*/
   
-  WITH cte AS
+   WITH cte AS
   ( SELECT  QUANTITYORDERED,
 	  (select avg(QUANTITYORDERED)
 	  from sales_dataset_rfm_prj) as av ,
 	  (select stddev(QUANTITYORDERED)
 	   from sales_dataset_rfm_prj) as stddev 
-	 FROM sales_dataset_rfm_prj)
-	 
-	 select QUANTITYORDERED,
+	 FROM sales_dataset_rfm_prj),
+	 cte1 as
+	 (select QUANTITYORDERED,
 	 (QUANTITYORDERED- av)/stddev as z_score
 	  from cte
-	  where abs(QUANTITYORDERED- av)/stddev >2
+	  where abs(QUANTITYORDERED- av)/stddev >2)
+  
+  DELETE from sales_dataset_rfm_prj
+  where QUANTITYORDERED in (select QUANTITYORDERED from cte1)
+
 
 /******6. Lưu vào bảng mới tên là SALES_DATASET_RFM_PRJ_CLEAN*/
 
