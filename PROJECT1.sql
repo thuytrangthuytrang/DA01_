@@ -6,7 +6,8 @@ ALTER COLUMN orderdate TYPE date USING (TRIM(orderdate):: date),
 ALTER COLUMN quantityordered TYPE numeric USING(trim(quantityordered)::numeric),
 ALTER COLUMN priceeach TYPE decimal USING(trim(priceeach)::decimal),
 ALTER COLUMN orderlinenumber TYPE numeric USING(trim(orderlinenumber)::numeric),
-ALTER COLUMN sales TYPE numeric USING(trim(sales)::numeric),
+ALTER COLUMN sales TYPE numeric USING(trim(sales)::float),
+ALTER COLUMN ordernumber TYPE numeric USING(trim(ordernumber)::float),
 ALTER COLUMN msrp TYPE numeric  USING(trim(msrp)::numeric)
 
 
@@ -92,7 +93,7 @@ WITH cte AS
 cte1 AS
 	(select QUANTITYORDERED,(QUANTITYORDERED- av)/stddev as z_score
 	from cte
-	where abs(QUANTITYORDERED- av)/stddev >3)
+	where abs(QUANTITYORDERED- av)/stddev >)
 
 /* xử lý outlier*/	
 DELETE from sales_dataset_rfm_prj
