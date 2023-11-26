@@ -2,20 +2,43 @@
 Output: month_year ( yyyy-mm) , total_user, total_orde*/
 
 
-select format_date('%Y-%m', created_at) AS month,
-  count(distinct order_id) as sales_per_month, count(distinct user_id) as customer_per_month
 
-from bigquery-public-data.thelook_ecommerce.orders
-where  format_date('%Y-%m', created_at) between '2019-01' and '2022-04'and 
-      format_date('%Y-%m', shipped_at) between '2019-01' and '2022-04'
+with cte as
+ (
+  select  count(id) as total_orde, format_date('%Y-%m', delivered_at) AS month
+ from bigquery-public-data.thelook_ecommerce.order_items
+where status='Complete'and
+format_date('%Y-%m', delivered_at) between '2019-01' and '2022-04'
+group by format_date('%Y-%m', delivered_at)),
+
+cte1 as 
+(
+select format_date('%Y-%m', delivered_at) AS month, count( user_id) as total_user
+from bigquery-public-data.thelook_ecommerce.order_items
+where format_date('%Y-%m', delivered_at) between '2019-01' and '2022-04'
+group by 1 
+order by 1)
+
+select a.month, a.total_user,b.total_orde
+from cte1 as a
+join cte as b
+  on a.month=b.month 
+order by a.month
+
+
+select format_date('%Y-%m', delivered_at) AS month,
+count(distinct user_id)  as total_user, count(id) as total_orde
+from bigquery-public-data.thelook_ecommerce.order_items
+where status='Complete'and
+format_date('%Y-%m', delivered_at) between '2019-01' and '2022-04'
 group by 1
-order by 1 
-
+order by 1
+  
 /*Giá trị đơn hàng trung bình (AOV) và số lượng khách hàng mỗi tháng*/
 
 select format_date('%Y-%m', created_at) AS month_year,
       count(distinct user_id) as  distinct_users,
-      sum(sale_price)/count(id) as  average_order_value
+      sum(sale_price)/count( distinct id) as  average_order_value
  
 from bigquery-public-data.thelook_ecommerce.order_items
 where format_date('%Y-%m', created_at) between '2019-01' and '2022-04' 
@@ -115,6 +138,56 @@ join bigquery-public-data.thelook_ecommerce.order_items as b
 join bigquery-public-data.thelook_ecommerce.products as c 
   on b.product_id=c.id
 where format_date('%Y-%m-%d',a.created_at)between '2022-01-15' and '2022-04-15'
+
+
+/*kkkkkkkkkkkkkk*/
+
+
+begin
+CREATE OR REPLACE TEMP TABLE bigquery-public-data.thelook_ecommerce.trang 
+ as (SELECT * FROM `bigquery-public-data.thelook_ecommerce.users`);
+ end;
+
+select * from bigquery-public-data.thelook_ecommerce.trang;
+
+
+
+begin
+CREATE OR REPLACE TEMP TABLE `bigquery-public-data.thelook_ecommerce.trang`
+ as
+((
+select a.first_name, a.last_name,a.age,a.gender,
+      min(a.age) over(partition by a.gender) as min_age,
+      format_date('%Y-%m', b.created_at) as date
+from `bigquery-public-data.thelook_ecommerce.users` as a 
+join `bigquery-public-data.thelook_ecommerce.orders` as b 
+  on b.user_id=a.id
+where format_date('%Y-%m', b.created_at) between '2019/01' and '2022/04'
+),
+
+cte1 as
+(
+select a.first_name, a.last_name,a.age,a.gender,
+      max(a.age) over(partition by a.gender) as max_age,
+      format_date('%Y-%m', b.created_at) as date
+from `bigquery-public-data.thelook_ecommerce.users` as a 
+join `bigquery-public-data.thelook_ecommerce.orders` as b 
+  on b.user_id=a.id
+where format_date('%Y-%m', b.created_at) between '2019/01' and '2022/04'
+)
+
+select first_name, last_name,age,gender, 'youngest' as tag
+from cte
+where age= min_age
+
+union all
+
+select first_name, last_name,age,gender, 'oldest' as tag
+from cte1
+where age= max_age);
+
+ end;
+
 
 
 
