@@ -32,49 +32,49 @@ giá trị đơn hàng lớn nhất là vào 2/2019, giá trị đơn hàng nh�
 
 begin 
 
-create temp table young_old
-as ( select * from 
-(
- with cte as
-(
-select first_name, last_name,age,gender,
-      min(age) over(partition by gender) as min_age,
-      format_date('%Y-%m', created_at) as date
-from `bigquery-public-data.thelook_ecommerce.users`
-where format_date('%Y-%m', created_at) between '2019/01' and '2022/04'
-),
-
-cte1 as
-(
-select first_name, last_name,age,gender,
-      max(age) over(partition by gender) as max_age,
-      format_date('%Y-%m', created_at) as date
-from `bigquery-public-data.thelook_ecommerce.users` 
-where format_date('%Y-%m', created_at) between '2019/01' and '2022/04'
-)
-
-select first_name, last_name,age,gender, 'youngest' as tag
-from cte
-where age= min_age
-
-union all
-
-select first_name, last_name,age,gender, 'oldest' as tag
-from cte1
-where age= max_age));
+create temp table young_old as 
+       ( select * from 
+              (
+               with cte as
+              (
+              select first_name, last_name,age,gender,
+                    min(age) over(partition by gender) as min_age,
+                    format_date('%Y-%m', created_at) as date
+              from `bigquery-public-data.thelook_ecommerce.users`
+              where format_date('%Y-%m', created_at) between '2019/01' and '2022/04'
+              ),
+              
+              cte1 as
+              (
+              select first_name, last_name,age,gender,
+                    max(age) over(partition by gender) as max_age,
+                    format_date('%Y-%m', created_at) as date
+              from `bigquery-public-data.thelook_ecommerce.users` 
+              where format_date('%Y-%m', created_at) between '2019/01' and '2022/04'
+              )
+              
+              select first_name, last_name,age,gender, 'youngest' as tag
+              from cte
+              where age= min_age
+              
+              union all
+              
+              select first_name, last_name,age,gender, 'oldest' as tag
+              from cte1
+              where age= max_age));
 
 end;
 
 /* số người nhỏ tuổi nhất */
 select count(*)
- from pristine-glass-406208._script259ccdc8a72adc5c1e9b44b5957a0ebd50cb9a98.young_old
- where tag='youngest'
+from pristine-glass-406208._script259ccdc8a72adc5c1e9b44b5957a0ebd50cb9a98.young_old
+where tag='youngest'
 
 /*số người lớn tuổi nhất */
  
 select count(*)
- from pristine-glass-406208._scripta5b2dd14328521efa0282b23b6472a3b9d200b04.young_old
- where tag='oldest'
+from pristine-glass-406208._scripta5b2dd14328521efa0282b23b6472a3b9d200b04.young_old
+where tag='oldest'
  
 /*--->tuổi nhỏ nhất là 12 tuổi với  981 người trong đó 467 nữ, 514 nam 
 tuổi lớn nhất là 70 tuổi với 1019 người trong đó 496 nữ, 523 nam */
