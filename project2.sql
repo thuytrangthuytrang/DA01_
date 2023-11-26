@@ -1,52 +1,33 @@
-/*1. Số lượng đơn hàng và số lượng khách hàng mỗi tháng
+/*1.Thống kê tổng số lượng người mua và số lượng đơn hàng đã hoàn thành mỗi tháng ( Từ 1/2019-4/2022)
 Output: month_year ( yyyy-mm) , total_user, total_orde*/
 
-with cte as
- (
-  select  count(id) as total_orde, format_date('%Y-%m', delivered_at) AS month
- from bigquery-public-data.thelook_ecommerce.order_items
-where status='Complete'and
-format_date('%Y-%m', delivered_at) between '2019-01' and '2022-04'
-group by format_date('%Y-%m', delivered_at)),
-
-cte1 as 
-(
-select format_date('%Y-%m', delivered_at) AS month, count( user_id) as total_user
-from bigquery-public-data.thelook_ecommerce.order_items
-where format_date('%Y-%m', delivered_at) between '2019-01' and '2022-04'
-group by 1 
-order by 1)
-
-select a.month, a.total_user,b.total_orde
-from cte1 as a
-join cte as b
-  on a.month=b.month 
-order by a.month
-
-
 select format_date('%Y-%m', delivered_at) AS month,
-count(distinct user_id)  as total_user, count(id) as total_orde
+       count(distinct user_id)  as total_user, count(id) as total_orde
 from bigquery-public-data.thelook_ecommerce.order_items
 where status='Complete'and
-format_date('%Y-%m', delivered_at) between '2019-01' and '2022-04'
+      format_date('%Y-%m', delivered_at) between '2019-01' and '2022-04'
 group by 1
 order by 1
+
+/*--->Số lượng đơn hàng và số lượng khách hàng nhìn chung có xu hướng tăng từ 1/2019- 4/2022*/
   
-/*2. Giá trị đơn hàng trung bình (AOV) và số lượng khách hàng mỗi tháng*/
+/********2. Giá trị đơn hàng trung bình (AOV) và số lượng khách hàng mỗi tháng*******/
 
 select format_date('%Y-%m', created_at) AS month_year,
-      count(distinct user_id) as  distinct_users,
-      sum(sale_price)/count( distinct id) as  average_order_value
+       count(distinct user_id) as  distinct_users,
+       sum(sale_price)/count( distinct id) as  average_order_value
  
 from bigquery-public-data.thelook_ecommerce.order_items
 where format_date('%Y-%m', created_at) between '2019-01' and '2022-04' 
 group by 1
 order by 1
 
+ /*--->cả số lượng khách hàng và giá trị đơn hàng trung bình hàng tháng tăng từ 1/2019 - 4/2022
+giá trị đơn hàng lớn nhất là vào 2/2019, giá trị đơn hàng nhỏ nhất là vào 11/2019*/
 
-/*3333333333333333*//
 
-/* tìm tuổi nhỏ nhất và tuổi lớn nhất*/
+
+/******3.Tìm các khách hàng có trẻ tuổi nhất và lớn tuổi nhất theo từng giới tính ( Từ 1/2019-4/2022)*******/
 
 
 begin 
@@ -84,10 +65,9 @@ where age= max_age));
 
 end;
 
-/* số lượng người nhỏ tuổi nhất*/
-
+/* số người nhỏ tuổi nhất */
 select count(*)
- from pristine-glass-406208._scripta5b2dd14328521efa0282b23b6472a3b9d200b04.young_old
+ from pristine-glass-406208._script259ccdc8a72adc5c1e9b44b5957a0ebd50cb9a98.young_old
  where tag='youngest'
 
 /*số người lớn tuổi nhất */
@@ -95,16 +75,17 @@ select count(*)
 select count(*)
  from pristine-glass-406208._scripta5b2dd14328521efa0282b23b6472a3b9d200b04.young_old
  where tag='oldest'
-
+ 
+/*--->tuổi nhỏ nhất là 12 tuổi với  981 người trong đó 467 nữ, 514 nam 
+tuổi lớn nhất là 70 tuổi với 1019 người trong đó 496 nữ, 523 nam */
   
 
-/*********r4*/
+/****4. Top 5 sản phẩm mỗi tháng*****/
 
   
-
 with cte as
 (
-select format_date('%Y-%m',b.created_at) as month_year, a.id as product_id, a.name as  product_name ,
+select distinct format_date('%Y-%m',b.created_at) as month_year, a.id as product_id, a.name as  product_name ,
 sum(b.sale_price) over (partition by format_date('%Y-%m',b.created_at),a.name) as  sales,
       a.cost * count( b.product_id) over (partition by format_date('%Y-%m',b.created_at),a.name) as cost,
        sum(b.sale_price) over (partition by format_date('%Y-%m',b.created_at),a.name) -
@@ -123,13 +104,12 @@ from cte
 
 select * from cte1
 where rank_per_month between 1 and 5
-order by month_year desc 
+order by month_year
 
  
 
 /*5.Doanh thu tính đến thời điểm hiện tại trên mỗi danh mục
-Thống kê tổng doanh thu theo ngày của từng danh mục sản phẩm (category) trong 3 tháng qua ( giả sử ngày hiện tại là 15/4/2022)
-Output: dates (yyyy-mm-dd), product_categories, revenue*/
+ trong 3 tháng qua ( giả sử ngày hiện tại là 15/4/2022)*/
 
 
 select format_date('%Y-%m-%d',b.created_at) as datee,c.category as product_categories,
