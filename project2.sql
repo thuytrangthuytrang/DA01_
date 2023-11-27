@@ -81,19 +81,29 @@ tuổi lớn nhất là 70 tuổi với 1019 người trong đó 496 nữ, 523 n
   
 
 /****4. Top 5 sản phẩm mỗi tháng*****/
-select month_year, product_id,  product_name, sales,cost,profit, rank_per_month
-from 
-(select format_date('%Y-%m',a.created_at) as month_year, a.product_id, b.name as product_name,
-sum(a.sale_price) as  sales, sum (b.cost) as cost, sum(a.sale_price) - sum (b.cost) as profit,
-dense_rank() over ( partition by 1 order by (sum(a.sale_price) - sum (b.cost))desc) as rank_per_month
+with cte as
+(
+  
+select format_date('%Y-%m',a.created_at) as month_year, a.product_id, b.name as product_name,
+sum(a.sale_price) as  sales, sum (b.cost) as cost, sum(a.sale_price) - sum (b.cost) as profit
 
 from  bigquery-public-data.thelook_ecommerce.order_items as a
 join bigquery-public-data.thelook_ecommerce.products as b
   on a.product_id=b.id
-  group by 1,2,3 
-order by 1 ) as ggg
+group by 1,2,3  
+order by 1,2
+),
 
-order by rank_per_month, rank_per_month between 1 and 5 
+
+cte1 as (
+select month_year, product_id, product_name, sales, cost, profit,
+ dense_rank() over ( partition by month_year order by profit desc) as ranking 
+from cte
+)
+
+select * from cte1 where ranking <=5
+order by month_year 
+
 
 
 /*5.Doanh thu tính đến thời điểm hiện tại trên mỗi danh mục
