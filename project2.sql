@@ -81,54 +81,21 @@ tuổi lớn nhất là 70 tuổi với 1019 người trong đó 496 nữ, 523 n
   
 
 /****4. Top 5 sản phẩm mỗi tháng*****/
+select month_year, product_id,  product_name, sales,cost,profit, rank_per_month
+from 
+(select format_date('%Y-%m',a.created_at) as month_year, a.product_id, b.name as product_name,
+sum(a.sale_price) as  sales, sum (b.cost) as cost, sum(a.sale_price) - sum (b.cost) as profit,
+dense_rank() over ( partition by 1 order by (sum(a.sale_price) - sum (b.cost))desc) as rank_per_month
 
-  
-with cte as
-(
-select distinct format_date('%Y-%m',b.created_at) as month_year, a.id as product_id, a.name as  product_name ,
-sum(b.sale_price) over (partition by format_date('%Y-%m',b.created_at),a.name) as  sales,
-      a.cost * count( b.product_id) over (partition by format_date('%Y-%m',b.created_at),a.name) as cost,
-       sum(b.sale_price) over (partition by format_date('%Y-%m',b.created_at),a.name) -
-       a.cost * count( b.product_id) over (partition by format_date('%Y-%m',b.created_at),a.name) as profit 
-from bigquery-public-data.thelook_ecommerce.products as a
-join bigquery-public-data.thelook_ecommerce.order_items as b
-  on a.id=b.product_id 
-),
+from  bigquery-public-data.thelook_ecommerce.order_items as a
+join bigquery-public-data.thelook_ecommerce.products as b
+  on a.product_id=b.id
+  group by 1,2,3 
+order by 1 ) as ggg
 
-cte1 as
-(
-select month_year,product_id, product_name,sales,cost,profit,
-      dense_rank() over(partition by month_year order by profit desc ) as rank_per_month
-from cte
-)
+order by rank_per_month, rank_per_month between 1 and 5 
 
-select * from cte1
-where rank_per_month between 1 and 5
-order by month_year
 
- ///////
-
-with cte as
-(select format_date('%Y-%m',created_at) as month , product_id, count( product_id)  as sl
-from bigquery-public-data.thelook_ecommerce.order_items
-group by format_date('%Y-%m',created_at), product_id)
-
-select * from 
-(select format_date('%Y-%m',b.created_at) as month_year, a.id as product_id, a.name as  product_name ,
-sum(b.sale_price) as  sales,
-sum (a.cost * d.sl) as cost,
-sum(b.sale_price) - sum (a.cost * d.sl)  as profit,
-dense_rank() over (partition by 1
-            order by sum(b.sale_price) - sum (a.cost * d.sl)) as  ranking
-
-from bigquery-public-data.thelook_ecommerce.products as a
-join bigquery-public-data.thelook_ecommerce.order_items as b
-  on a.id=b.product_id 
-join cte as d 
-  on d.month= format_date('%Y-%m',b.created_at) 
-
-GROUP BY 1,2,3)
-where ranking <=5
 /*5.Doanh thu tính đến thời điểm hiện tại trên mỗi danh mục
  trong 3 tháng qua ( giả sử ngày hiện tại là 15/4/2022)*/
 
