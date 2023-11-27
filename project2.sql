@@ -122,6 +122,62 @@ group by 1,2
 order by 1, sum(b.sale_price) desc 
 
 
+/**************************************************************************/
+
+
+with vw_ecommerce_analyst as (
+with cte as
+(
+select extract (month from b.created_at) as month, extract ( year from b.created_at) as year,c.category as Product_category,
+      count(b.id)  over(partition by extract ( year from b.created_at), extract (month from b.created_at)) as tpo,
+      sum(c.cost) over(partition by extract ( year from b.created_at), extract (month from b.created_at)) as total_cost,
+      sum(b.sale_price) over(partition by extract ( year from b.created_at), extract (month from b.created_at)) -
+      sum(c.cost) over(partition by extract ( year from b.created_at), extract (month from b.created_at)) as total_profit,
+      sum(b.sale_price) over(partition by extract ( year from b.created_at), extract (month from b.created_at)) as tpv,
+      round((sum(b.sale_price) over(partition by extract ( year from b.created_at), extract (month from b.created_at)) -
+      sum(c.cost) over(partition by extract ( year from b.created_at), extract (month from b.created_at)))/ 
+      (sum(c.cost) over(partition by extract ( year from b.created_at), extract (month from b.created_at))),2) as Profit_to_cost_ratio,
+
+         concat(extract (month from b.created_at),'-',extract ( year from b.created_at)) AS monthhh,
+
+
+from bigquery-public-data.thelook_ecommerce.orders as a
+join bigquery-public-data.thelook_ecommerce.order_items as b
+on a.order_id=b.id
+join bigquery-public-data.thelook_ecommerce.products as c
+on b.product_id=c.id
+order by year,month
+),
+
+cte1 as(
+select distinct month,year,tpv,tpo,Profit_to_cost_ratio
+from cte
+order by year, month),
+
+cte2 as 
+(
+select *, 
+lead(tpv) over (order by year,month) as sale_next_month,
+lead(tpo) over (order by year,month) as order_next_month,
+concat (round((lead(tpv) over (order by year,month) - tpv)/tpv,2),'%') as Revenue_growth,
+concat(round((lead(tpo) over (order by year,month) - tpo)/tpo,2),'%') as Order_growth
+from cte1
+order by year, month )
+
+
+select g.month, g.year, g.Product_category, g.tpv,h.Revenue_growth,h.Order_growth, g.total_cost,g.total_profit, g.Profit_to_cost_ratio
+from cte as g
+join cte2 as h 
+  on h.month=g.month and h.year=g.year 
+order by year, month)
+
+
+
+
+
+
+
+
 
 
 
