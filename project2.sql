@@ -1,11 +1,11 @@
 /*1.Thống kê tổng số lượng người mua và số lượng đơn hàng đã hoàn thành mỗi tháng ( Từ 1/2019-4/2022)
 Output: month_year ( yyyy-mm) , total_user, total_orde*/
 
-select format_date('%Y-%m', delivered_at) AS month,
+select format_date('%Y-%m', created_at) AS month,
        count(distinct user_id)  as total_user, count(id) as total_orde
 from bigquery-public-data.thelook_ecommerce.order_items
 where status='Complete'and
-      format_date('%Y-%m', delivered_at) between '2019-01' and '2022-04'
+      format_date('%Y-%m', created_at) between '2019-01' and '2022-04'
 group by 1
 order by 1
 
@@ -106,8 +106,29 @@ select * from cte1
 where rank_per_month between 1 and 5
 order by month_year
 
- 
+ ///////
 
+with cte as
+(select format_date('%Y-%m',created_at) as month , product_id, count( product_id)  as sl
+from bigquery-public-data.thelook_ecommerce.order_items
+group by format_date('%Y-%m',created_at), product_id)
+
+select * from 
+(select format_date('%Y-%m',b.created_at) as month_year, a.id as product_id, a.name as  product_name ,
+sum(b.sale_price) as  sales,
+sum (a.cost * d.sl) as cost,
+sum(b.sale_price) - sum (a.cost * d.sl)  as profit,
+dense_rank() over (partition by 1
+            order by sum(b.sale_price) - sum (a.cost * d.sl)) as  ranking
+
+from bigquery-public-data.thelook_ecommerce.products as a
+join bigquery-public-data.thelook_ecommerce.order_items as b
+  on a.id=b.product_id 
+join cte as d 
+  on d.month= format_date('%Y-%m',b.created_at) 
+
+GROUP BY 1,2,3)
+where ranking <=5
 /*5.Doanh thu tính đến thời điểm hiện tại trên mỗi danh mục
  trong 3 tháng qua ( giả sử ngày hiện tại là 15/4/2022)*/
 
@@ -122,6 +143,7 @@ join bigquery-public-data.thelook_ecommerce.products as c
 where format_date('%Y-%m-%d',b.created_at)between '2022-01-15' and '2022-04-15'
 group by 1,2   
 order by 1, sum(b.sale_price) desc 
+
 
 
 
