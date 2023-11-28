@@ -122,7 +122,7 @@ group by 1,2
 order by 1, sum(b.sale_price) desc 
 
 
-/**************************************************************************/
+/**********************************PART 2 ****************************************/
 
 
 with vw_ecommerce_analyst as (
@@ -172,7 +172,7 @@ join cte2 as h
 order by year, month)
 
 
-/***tỷ lệ số khách hàng quay lại ****/
+/***2. tỷ lệ số khách hàng quay lại ****/
 
 
 with cte as 
@@ -183,7 +183,8 @@ from
 (
 select user_id,created_at as date,
 min(created_at) over(partition by user_id) as first
-from  bigquery-public-data.thelook_ecommerce.order_items)),
+from  bigquery-public-data.thelook_ecommerce.order_items
+where created_at between '2019-01-06'and '2021-01-31')),
 
 cte1 as (
 select cohort_date, index, count(distinct user_id) as number_user
