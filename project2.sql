@@ -209,6 +209,28 @@ round(100*m4/m1,2) || '%' as m4,
 from cohort
 
 
+////////////
+with cte as 
+(
+select format_date('%Y-%m',first) as cohort_date,date, (extract(year from date)-extract(year from first))*12+
+(extract(month from date)-extract(month from first))+1 as index,user_id
+from
+(
+select user_id,created_at as date,
+min(created_at) over(partition by user_id) as first
+from  bigquery-public-data.thelook_ecommerce.order_items))
+
+select cohort_date, index, count(distinct user_id) as number_user
+from cte 
+group by cohort_date,index
+order by cohort_date,index
+
+
+
+
+
+
+
 
 
 
