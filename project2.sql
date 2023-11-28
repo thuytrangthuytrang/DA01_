@@ -172,7 +172,7 @@ join cte2 as h
 order by year, month)
 
 
-/****2222222222222222222222****/
+/***tỷ lệ số khách hàng quay lại ****/
 
 
 with cte as 
@@ -209,7 +209,7 @@ round(100*m4/m1,2) || '%' as m4,
 from cohort
 
 
-////////////
+/*Visualize số khách hàng quay lại từ 1/2019-1/2020*/
 with cte as 
 (
 select format_date('%Y-%m',first) as cohort_date,date, (extract(year from date)-extract(year from first))*12+
@@ -218,12 +218,13 @@ from
 (
 select user_id,created_at as date,
 min(created_at) over(partition by user_id) as first
-from  bigquery-public-data.thelook_ecommerce.order_items))
+from  bigquery-public-data.thelook_ecommerce.order_items
+where created_at between '2019-01-06'and '2020-01-31'))
 
 select cohort_date, index, count(distinct user_id) as number_user
 from cte 
 group by cohort_date,index
-order by cohort_date,index
+order by cohort_date,index 
 
 
 
