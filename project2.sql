@@ -172,6 +172,43 @@ join cte2 as h
 order by year, month)
 
 
+/****2222222222222222222222****/
+
+
+with cte as 
+(
+select format_date('%Y-%m',first) as cohort_date,date, (extract(year from date)-extract(year from first))*12+
+(extract(month from date)-extract(month from first))+1 as index,user_id
+from
+(
+select user_id,created_at as date,
+min(created_at) over(partition by user_id) as first
+from  bigquery-public-data.thelook_ecommerce.order_items)),
+
+cte1 as (
+select cohort_date, index, count(distinct user_id) as number_user
+from cte 
+group by cohort_date,index),
+
+cohort as
+(
+select cohort_date,
+sum (case when index = 1 then number_user else 0 end) as m1,
+sum (case when index= 2 then number_user else 0 end) as m2,
+sum (case when index= 3 then number_user else 0 end) as m3,
+sum (case when index= 4 then number_user else 0 end) as m4
+from cte1
+group by cohort_date
+order by cohort_date)
+
+select cohort_date,
+round(100*m1/m1,2) || '%' as m1,
+round(100*m2/m1,2) || '%' as m2,
+round(100*m3/m1,2) || '%' as m3,
+round(100*m4/m1,2) || '%' as m4,
+from cohort
+
+
 
 
 
