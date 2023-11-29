@@ -171,7 +171,42 @@ join cte2 as h
   on h.month=g.month and h.year=g.year 
 order by year, month)
 
+/**=====> mới chỉ nhóm theo ngày tháng chưa nhóm theo category***/
 
+/************SỬA *********/
+
+with cte as
+(select 
+ format_date('%Y-%m', o.created_at) as Month
+,format_date('%Y', o.created_at) as Year
+,p.category as Product_category
+,sum(sale_price) as TPV
+,count(oi.order_id) as TPO
+,sum(cost) as Total_cost
+from bigquery-public-data.thelook_ecommerce.orders as o
+inner join bigquery-public-data.thelook_ecommerce.order_items as oi
+on o.order_id = oi.order_id
+inner join bigquery-public-data.thelook_ecommerce.products as p
+on p.id = oi.product_id 
+group by 1,2,3
+order by 1,2),
+
+cte2 as(
+select *
+,lag(TPV) over(partition by Month order by Month) as next_rev
+,lag(TPO) over(partition by Month order by Month) as next_order
+,TPV-TPO as Total_profit
+from cte
+)
+
+ select Month,Year,Product_category,TPV,TPO,Total_cost,Total_profit
+,concat(round((next_rev - TPV)/TPV*100.0,2),"%") as Revenue_growth
+,concat(round((next_order - TPO)/TPO*100.0,2),"%") as Order_growth
+,round(Total_profit/Total_cost,2) as Profit_to_cost_ratio 
+from cte2
+
+
+       
 /***2. tỷ lệ số khách hàng quay lại ****/
 
 
@@ -203,14 +238,15 @@ group by cohort_date
 order by cohort_date)
 
 select cohort_date,
-round(100*m1/m1,2) || '%' as m1,
-round(100*m2/m1,2) || '%' as m2,
-round(100*m3/m1,2) || '%' as m3,
-round(100*m4/m1,2) || '%' as m4,
+round(100.00*m1/m1,2) || '%' as m1,
+round(100.00*m2/m1,2) || '%' as m2,
+round(100.00*m3/m1,2) || '%' as m3,
+round(100.00*m4/m1,2) || '%' as m4,
 from cohort
 
 
 /*Visualize số khách hàng quay lại trong 1 năm từ 1/2019-1/2020*/
+
 with cte as 
 (
 select format_date('%Y-%m',first) as cohort_date,date, (extract(year from date)-extract(year from first))*12+
