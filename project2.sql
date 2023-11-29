@@ -210,7 +210,7 @@ round(100*m4/m1,2) || '%' as m4,
 from cohort
 
 
-/*Visualize số khách hàng quay lại từ 1/2019-1/2020*/
+/*Visualize số khách hàng quay lại trong 1 năm từ 1/2019-1/2020*/
 with cte as 
 (
 select format_date('%Y-%m',first) as cohort_date,date, (extract(year from date)-extract(year from first))*12+
