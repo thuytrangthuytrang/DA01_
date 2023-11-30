@@ -45,7 +45,7 @@ with cte as
 
 select MONTH_ID, Year_id,Productline,ORDER_NUMBER,revenue
 from cte
-order by Year_id,MONTH_ID, revenue desc, ORDER_NUMBER desc 
+order by Year_id, MONTH_ID, ORDER_NUMBER desc
 	
 
 /***4) Đâu là sản phẩm có doanh thu tốt nhất ở UK mỗi năm? 
@@ -74,6 +74,7 @@ where ranking=1
 /***5) Ai là khách hàng tốt nhất, phân tích dựa vào RFM 
 (sử dụng lại bảng customer_segment ở buổi học 23)***/
 
+/** tính RFM*/
 with rfm as
 	(
 	select  customername, 
@@ -82,7 +83,7 @@ with rfm as
 		sum(sales) as M 
 	from public.sales_dataset_rfm_prj_clean
 	group by customername),
-
+/** tính điểm*/
 rfm_score as
 	(
 	select customername, F,R,M,
@@ -90,14 +91,14 @@ rfm_score as
 		ntile(5) over(order by F) as F_score,
 		ntile(5) over(order by M) as M_score
 	from rfm),
-
+/* tạo tổ hợp điểm*/
 cte as
 (
 	select customername, F,R,M,
 		cast(R_score as varchar)||cast(F_score as varchar)||
 		cast(M_score as varchar) as rfm_score
 	from rfm_score)
-
+/* khách hàng tốt nhất*/
 select customername,r as time, f as order, m as money,segment
 from(
 	select a.customername,a.F,R,M,b.segment,
