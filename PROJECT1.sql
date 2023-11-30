@@ -7,7 +7,7 @@ ALTER COLUMN quantityordered TYPE numeric USING(trim(quantityordered)::numeric),
 ALTER COLUMN priceeach TYPE decimal USING(trim(priceeach)::decimal),
 ALTER COLUMN orderlinenumber TYPE numeric USING(trim(orderlinenumber)::numeric),
 ALTER COLUMN sales TYPE numeric USING(trim(sales)::float),
-ALTER COLUMN ordernumber TYPE numeric USING(trim(ordernumber)::float),
+ALTER COLUMN ordernumber TYPE numeric USING(trim(ordernumber)::numeric),
 ALTER COLUMN msrp TYPE numeric  USING(trim(msrp)::numeric)
 
 
@@ -54,9 +54,9 @@ ADD COLUMN YEAR_ID int
 
 
 UPDATE sales_dataset_rfm_prj
-SET QTR_ID=EXTRACT( QUARTER FROM ORDERDATE),
-MONTH_ID=EXTRACT( MONTH FROM ORDERDATE),
-YEAR_ID=EXTRACT( YEAR FROM ORDERDATE)
+SET 	QTR_ID=EXTRACT( QUARTER FROM ORDERDATE),
+	MONTH_ID=EXTRACT( MONTH FROM ORDERDATE),
+	YEAR_ID=EXTRACT( YEAR FROM ORDERDATE)
 	
 
 	
@@ -93,7 +93,7 @@ WITH cte AS
 cte1 AS
 	(select QUANTITYORDERED,(QUANTITYORDERED- av)/stddev as z_score
 	from cte
-	where abs(QUANTITYORDERED- av)/stddev >)
+	where abs(QUANTITYORDERED- av)/stddev) > 2 )
 
 /* xử lý outlier*/	
 DELETE from sales_dataset_rfm_prj
