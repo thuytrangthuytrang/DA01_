@@ -107,5 +107,3 @@ from(
 	join public.segment_score as b
 		on a.rfm_score=b.scores) as a
 where ranking=1
-
-/*------> "Euro Shopping Channel" là khách hàng tốt nhất*****/
