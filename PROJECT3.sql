@@ -8,8 +8,7 @@ order by ProductLine, Year_id, DealSize
 
 
 /***2) Đâu là tháng có bán tốt nhất mỗi năm?
-Output: MONTH_ID, REVENUE, ORDER_NUMBER
- *****/
+Output: MONTH_ID, REVENUE, ORDER_NUMBER*****/
 
 with cte as
 (
@@ -26,11 +25,12 @@ group by Year_id,MONTH_ID) as a
 select MONTH_ID,year_ID,ORDERNUMBER,REVENUE
 from cte
 where ranking=1
+	
 
 /*****3) Product line nào được bán nhiều ở tháng 11?
-Output: MONTH_ID, REVENUE, ORDER_NUMBER
-*****/
+Output: MONTH_ID, REVENUE, ORDER_NUMBER	*****/
 
+	
 with cte as
 (
 	select *
@@ -46,6 +46,7 @@ with cte as
 select MONTH_ID, Year_id,Productline,ORDER_NUMBER,revenue
 from cte
 order by Year_id,MONTH_ID, revenue desc, ORDER_NUMBER desc 
+	
 
 /***4) Đâu là sản phẩm có doanh thu tốt nhất ở UK mỗi năm? 
 Xếp hạng các các doanh thu đó theo từng năm.
@@ -69,8 +70,6 @@ select YEAR_ID,PRODUCTLINE,REVENUE,
 from cte
 where ranking=1
 
-
-/*****5) Ai là khách hàng tốt nhất, phân tích dựa vào RFM***/
 
 /***5) Ai là khách hàng tốt nhất, phân tích dựa vào RFM 
 (sử dụng lại bảng customer_segment ở buổi học 23)***/
