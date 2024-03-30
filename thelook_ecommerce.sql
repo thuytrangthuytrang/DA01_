@@ -123,7 +123,7 @@ order by 1, sum(b.sale_price) desc
 
 
 /**********************************PART 2 ****************************************/
-
+/***Tạo retention cohort analysis***/
 
 with vw_ecommerce_analyst as (
 with cte as
